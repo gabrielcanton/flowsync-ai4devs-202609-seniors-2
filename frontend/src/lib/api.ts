@@ -1,4 +1,12 @@
-import type { AuthResult, LoginPayload, SignupPayload, User } from '@/lib/types'
+import type {
+  AuthResult,
+  CreateTaskPayload,
+  LoginPayload,
+  SignupPayload,
+  Task,
+  TaskStatus,
+  User,
+} from '@/lib/types'
 
 const API_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:3333'
 
@@ -35,6 +43,7 @@ const FIELD_LABELS: Record<string, string> = {
   email: 'el email',
   password: 'la contraseña',
   passwordConfirmation: 'la confirmación de la contraseña',
+  title: 'el título',
 }
 
 const label = (field?: string) => FIELD_LABELS[field ?? ''] ?? 'el campo'
@@ -45,6 +54,17 @@ const label = (field?: string) => FIELD_LABELS[field ?? ''] ?? 'el campo'
  */
 function translate(error: BackendError): string {
   const { rule, field, meta } = error
+
+  // El título tiene mensajes propios: "al menos 1 caracteres" no se entiende.
+  // Un título solo con espacios llega como `required` (el recorte lo deja vacío).
+  if (field === 'title') {
+    if (rule === 'required' || rule === 'minLength') {
+      return 'Falta rellenar el título.'
+    }
+    if (rule === 'maxLength') {
+      return `El título no puede superar los ${meta?.max} caracteres.`
+    }
+  }
 
   switch (rule) {
     case 'database.unique':
@@ -102,7 +122,7 @@ function toApiError(status: number, body: unknown): ApiError {
 }
 
 type RequestOptions = {
-  method?: 'GET' | 'POST'
+  method?: 'GET' | 'POST' | 'PATCH'
   body?: unknown
   token?: string | null
 }
@@ -163,4 +183,33 @@ export function logout(token: string): Promise<void> {
   return request('/api/v1/account/logout', { method: 'POST', token }).then(
     () => undefined,
   )
+}
+
+export function listTasks(token: string): Promise<Task[]> {
+  return request<{ data: Task[] }>('/api/v1/tasks', { token }).then(
+    (response) => response.data,
+  )
+}
+
+export function createTask(
+  token: string,
+  payload: CreateTaskPayload,
+): Promise<Task> {
+  return request<{ data: Task }>('/api/v1/tasks', {
+    method: 'POST',
+    body: payload,
+    token,
+  }).then((response) => response.data)
+}
+
+export function updateTaskStatus(
+  token: string,
+  id: number,
+  status: TaskStatus,
+): Promise<Task> {
+  return request<{ data: Task }>(`/api/v1/tasks/${id}`, {
+    method: 'PATCH',
+    body: { status },
+    token,
+  }).then((response) => response.data)
 }
