@@ -1,35 +1,23 @@
 # Prompts
 
-Aquí van **todos los prompts que lanzaste** para hacer el ejercicio, en el orden en que los
-lanzaste, con el modelo y la herramienta de cada uno.
-
-Esto no es papeleo. Lo que se revisa es **cómo pediste las cosas**, no solo lo que salió: un
-resultado flojo con un prompt bueno y un resultado flojo con un prompt vago necesitan feedback
-distinto, y sin este archivo no se distinguen.
-
-## Cómo rellenarlo
-
-- Un apartado `## Prompt N` por cada prompt.
-- **Pega el prompt tal cual lo lanzaste**, dentro del bloque de código, aunque ocupe diez líneas
-  y aunque tenga faltas. No lo reescribas para que quede bien: el que arreglaste mentalmente
-  después no es el que lanzaste.
-- Incluye también los que **no funcionaron**. Suelen ser los más útiles de leer.
-- `Modelo` y `Herramienta` en todos. Si cambiaste de una a otra a mitad, se nota aquí.
-
-Borra el ejemplo de abajo cuando escribas el primero.
-
----
-
 ## Prompt 1
 
-**Modelo:** Opus 1M xHigh
+**Modelo:** Sonnet 5.5 Medium
 **Herramienta:** Claude Code
 
 ```
-Este es el ejemplo. Bórralo.
-
-El prompt va aquí dentro, entero y con sus saltos de línea,
-para que se sepa dónde empieza y dónde acaba.
+This is an ongoing project. I need you to document the part already developed: accounts and access. Examine both frontend and backend and extract the behaviour expected from the system; then document it in the docs/spec-viva/gc.md file, following the format defined in it. I've left an example.md file in the same folder for you. Stick to the users and access capability, don't go beyond that. Ask any questions you have, don't make assumptions.
 ```
 
-**Qué salió:** (opcional, una línea) funcionó a la primera / tuve que insistir / me inventó una ruta que no existe.
+**Qué salió:** Hizo preguntas muy relevantes. Detectó casos de comportamiento sospechoso de incidental, preguntó cómo tratarlos.
+
+## Prompt 2
+
+**Modelo:** Sonnet 5.5 Medium
+**Herramienta:** Claude Code
+
+```
+What files did you check to identify the first requirement?
+```
+
+**Qué salió:** Me indicó qué archivos revisar para validar el primer requerimiento
