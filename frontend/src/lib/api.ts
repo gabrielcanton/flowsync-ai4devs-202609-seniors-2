@@ -5,6 +5,7 @@ import type {
   SignupPayload,
   Task,
   TaskStatus,
+  UpdateTaskPayload,
   User,
 } from '@/lib/types'
 
@@ -44,6 +45,7 @@ const FIELD_LABELS: Record<string, string> = {
   password: 'la contraseña',
   passwordConfirmation: 'la confirmación de la contraseña',
   title: 'el título',
+  dueDate: 'la fecha de vencimiento',
 }
 
 const label = (field?: string) => FIELD_LABELS[field ?? ''] ?? 'el campo'
@@ -64,6 +66,11 @@ function translate(error: BackendError): string {
     if (rule === 'maxLength') {
       return `El título no puede superar los ${meta?.max} caracteres.`
     }
+  }
+
+  // Una fecha imposible o incompleta (`2026-02-30`, `2026-12`) no se traga en silencio.
+  if (field === 'dueDate') {
+    return 'La fecha de vencimiento no es válida. Usa el formato año-mes-día.'
   }
 
   switch (rule) {
@@ -185,8 +192,31 @@ export function logout(token: string): Promise<void> {
   )
 }
 
+/**
+ * Día local de quien mira en `YYYY-MM-DD`. Se construye con los getters locales
+ * y no con `toISOString()`, que da el día UTC y reintroduciría el desfase de
+ * huso. El backend decide el vencimiento contra este día; el cliente no.
+ */
+export function localToday(): string {
+  const now = new Date()
+  const month = String(now.getMonth() + 1).padStart(2, '0')
+  const day = String(now.getDate()).padStart(2, '0')
+
+  return `${now.getFullYear()}-${month}-${day}`
+}
+
+/** Toda llamada de tareas lleva el día local para que `isOverdue` salga ya calculado. */
+const taskPath = (path = '') =>
+  `/api/v1/tasks${path}?today=${encodeURIComponent(localToday())}`
+
 export function listTasks(token: string): Promise<Task[]> {
-  return request<{ data: Task[] }>('/api/v1/tasks', { token }).then(
+  return request<{ data: Task[] }>(taskPath(), { token }).then(
+    (response) => response.data,
+  )
+}
+
+export function getTask(token: string, id: number): Promise<Task> {
+  return request<{ data: Task }>(taskPath(`/${id}`), { token }).then(
     (response) => response.data,
   )
 }
@@ -195,8 +225,20 @@ export function createTask(
   token: string,
   payload: CreateTaskPayload,
 ): Promise<Task> {
-  return request<{ data: Task }>('/api/v1/tasks', {
+  return request<{ data: Task }>(taskPath(), {
     method: 'POST',
+    body: payload,
+    token,
+  }).then((response) => response.data)
+}
+
+function updateTask(
+  token: string,
+  id: number,
+  payload: UpdateTaskPayload,
+): Promise<Task> {
+  return request<{ data: Task }>(taskPath(`/${id}`), {
+    method: 'PATCH',
     body: payload,
     token,
   }).then((response) => response.data)
@@ -207,9 +249,14 @@ export function updateTaskStatus(
   id: number,
   status: TaskStatus,
 ): Promise<Task> {
-  return request<{ data: Task }>(`/api/v1/tasks/${id}`, {
-    method: 'PATCH',
-    body: { status },
-    token,
-  }).then((response) => response.data)
+  return updateTask(token, id, { status })
+}
+
+/** `null` quita la fecha; se envía explícitamente, no se omite. */
+export function updateTaskDueDate(
+  token: string,
+  id: number,
+  dueDate: string | null,
+): Promise<Task> {
+  return updateTask(token, id, { dueDate })
 }

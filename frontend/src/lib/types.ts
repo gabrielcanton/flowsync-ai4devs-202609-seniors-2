@@ -49,9 +49,22 @@ export type Task = {
   id: number
   title: string
   status: TaskStatus
+  /** Fecha de calendario `YYYY-MM-DD`, sin hora; `null` si no tiene. */
+  dueDate: string | null
+  /** Veredicto del backend contra el día local enviado; el cliente no lo calcula. */
+  isOverdue: boolean
   assignee: { fullName: string | null }
 }
 
 export type CreateTaskPayload = {
   title: string
+}
+
+/**
+ * Actualización parcial de una tarea: al menos una de las dos claves. Una clave
+ * ausente no se toca; `dueDate: null` quita la fecha.
+ */
+export type UpdateTaskPayload = {
+  status?: TaskStatus
+  dueDate?: string | null
 }
