@@ -16,4 +16,3 @@ Vamos a hacer una auditoría de las reglas de proceso documentadas al final de @
     Cuando una regla se cumpla en algunos casos y no en otros, el criterio es que no se cumple (para considerar que se cumple, se debe cumplir siempre).
 ```
 
-**Qué salió:** (opcional, una línea) funcionó a la primera / tuve que insistir / me inventó una ruta que no existe.
