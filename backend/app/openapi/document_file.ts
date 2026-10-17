@@ -16,6 +16,11 @@ const VERSIONED_LABEL = relative(join(app.appRoot.pathname, '..'), VERSIONED_DOC
  * sangría y salto de línea final, para que el diff en git sea legible.
  */
 async function renderDocument(): Promise<string> {
+  // El servidor HTTP confirma las rutas al arrancar; en `console` nadie lo hace
+  // y `router.toJSON()` devolvería vacío, y con él un documento sin `paths`.
+  const router = await app.container.make('router')
+  router.commit()
+
   const openapi = await app.container.make('openapi')
   const document = await openapi.buildDocument()
   return JSON.stringify(document, null, 2) + '\n'
